@@ -1,0 +1,280 @@
+Installation instructions for Wiki Administration Tool (formerly known as Deployment framework)
+-----------------------------------------------------------------------------------------------
+
+Install instructions for the latest version of the Wiki Administration Tool are also online:
+
+ http://smwforum.ontoprise.com/smwforum/index.php/Help:Installing_Wiki_Administration_Tool
+
+---------------------------------------
+Important!  
+---------------------------------------
+The new template of settings.php file is delivered in the config folder. If you install 
+the wiki admin tool for the first time, you have to copy settings.php in the root folder
+(deployment/settings.php). If something is wrong the tool will tell you when you first access
+it. If you update, take a look in it and check if you need to set additional parameters.
+
+WAT 1.70:
+
+Old restore point must be converted manually. Otherwise they can not be restored. Don't worry,
+this is easy. Just zip the content of a restore point directory in a zip called software.zip. 
+You can delete the files afterwards (EXCEPT: dump.sql)
+
+Third party tools
+==================
+The Wiki Administration Tool uses:
+
+    - GNU unzip (GPL)
+    - GNU patch (GPL)
+    - 7zip (LGPL)
+    
+Requirements: 
+=============
+    MediaWiki 1.17 installed
+    
+Table of contents
+=================
+1. Installation
+1a. Settings
+2. I already have SMW installed. Can I use the DF though?
+3. HowTo use the Wiki Administration Tool
+4. Restore wiki from restore point
+5. Adding new repositories
+6. Using Wiki Administration Tool with a Proxy
+7. Wiki Administration Tool log
+8. Importing ontologies
+9. Non public apps
+
+#
+# 1. Installation:
+# =================
+
+ Note: If you upgrade from DF 1.31 make sure that you configured:
+ 
+        require_once('deployment/Deployment.php');
+        
+    This was optional before DF 1.56! (see also step 7)
+    
+(1) Unzip deployment-x.x.x.zip in the MediaWiki root folder.
+(2) Set in LocalSettings.php the values for
+ 
+            $wgDBadminuser and 
+            $wgDBadminpassword
+             
+      with the name and passwort of the administrator user in
+      your MYSQL installation. If you are using SMW+ then your 
+      default name and passwort is: 'root' and 'm8nix'.
+     
+     Important: Use string constants and *not* other variables to define these variables.
+      
+(3) On Linux: make smwadmin.sh executable 
+
+      Open the installation directory of the Wiki Administration Tool in the 
+      commandline interface: "<mediawiki-install-dir>/deployment/tools/"
+      and call: "chmod +x smwadmin.sh"
+      
+(4) Include the path to the php binary to PATH variable (either Windows or Linux) 
+(5) Include the path to mysql.exe to the PATH variable (either Windows or Linux)
+(6) Test your installation
+
+  Open the installation directory of the Wiki Administration Tool in the 
+  commandline interface in <mediawiki-install-dir>/deployment/tools/
+  and call: smwadmin.bat (windows) or ./smwadmin.sh (linux). You should see the help screen.
+  
+(7) add the following include statement in your LocalSettings.php 
+    
+     require_once('deployment/Deployment.php');
+ 
+    It enables a special page for checking the integrity of the MW installation. 
+    
+    Be careful: Up to DF 1.31 this step was optional. It is NOT anymmore.
+    
+(8) Webadmin console. !This is OPTIONAL! 
+	There is a web-based version of DF called 'webadmin console'
+    
+    for installation instructions see deployment/tools/webadmin/INSTALL
+    
+#
+# 1a.
+#
+
+There is a settings file located at deployment/settings.php. Take a look in it,
+it is documented.
+    
+#    
+# 2. I already have SMW installed. Can I use the DF though?
+# ==========================================================
+
+The DF requires extensions to have some metadata around. If you have SMW and/or SemanticForms
+installed manually and you want to use the DF you may "lift" your installation
+automatically. There is a tool called checkInstallation.php which can do that.
+
+(the following instructions assume the "php" command lies in your PATH variable)
+
+(1) Open a console in admin mode and change to deployment/tools/maintenance
+(2) Run: php checkInstallation.php
+        The tools does some checks and tell you if there are extensions to be lifted.
+(2) If that is the case, run:
+ 
+        php checkInstallation.php --lift
+
+After that you can run smwadmin tool to see if it recognizes SMW as installed.
+
+    deployment/tools/smwadmin -l
+
+Note that the lifting process does only work for SMW + SF. If you have other extensions
+that should be handled by the DF, you should remove them from the LocalSettings.php
+and re-install them via DF. They get overwritten then!
+
+The lifting should also work with the SemanticBundle. It is a bundle of several
+semantic extensions containing SMW + SF among others. 
+
+#
+# 3. HowTo use the Wiki Administration Tool
+# ======================================
+
+Wiki administration tool utility v1.6.0_0 [B???], Ontoprise 2009-2011
+
+Usage: smwadmin [ -i | -d ] <bundle>[-<version>] [ additional-options ]
+       smwadmin -u [ <bundle>[-<version>] ] [ additional-options ]
+       smwadmin -r [ <restore point name> ]
+       smwadmin [--desc ] -l [ fragment ]
+       smwadmin --rcreate [ <restore point name> ]
+       smwadmin --rlist
+       smwadmin --finalize
+
+        -i <bundle>: Install
+        -d <bundle> ]: De-Install
+        -u <bundle>: Update
+        -l [ pattern ] : List installed bundles.
+        --desc -l : Shows additional description about the bundles.
+        -l smw : Lists only bundles containing 'smw' in the ID.
+        -r [ name ]: Restore from a wiki-restore-point.
+        --rcreate [ name ]: Explicitly creates a wiki-restore-point.
+        --rlist : Shows all existing wiki-restore-points
+        --finalize: Finalizes installation
+        
+        Additional options (can only be used with the optional above):
+        
+        --dep : Check only dependencies but do not install.
+        -f: Force operation (ignore any problems if possible)
+        --nocheck: Skips checks for appropriate rights.
+        --noask: Skips all questions (assuming mostly 'yes' except for optional bundles
+        --removereferenced: Removes all templates, images and instances referenced used by a bundle. Used with -d
+                --removeTemplates: Removes all templates referenced used by a bundle. Used with -d
+                --removeInstances: Removes all instances referenced used by a bundle. Used with -d
+                --removeImages: Removes all images referenced used by a bundle. Used with -d
+        --removestillused: Removes also pages which are used by other bundles. Used with -d --removereferenced
+        --applypatches <bundle-ID>: Applies all patches of the given bundle again.
+
+Examples:
+        smwadmin -i smwhalo 
+            Installs the given bundle 'smwhalo'
+        smwadmin -u: 
+            Updates complete installation.
+        smwadmin -u --dep 
+            Shows what would be updated.
+        smwadmin -d smw 
+            Removes the bundle 'smw'.
+        smwadmin -r myrestorepoint
+            Restores old installation from the restore point 'myrestorepoint'. 
+        smwadmin -i smwhalo -f
+            Installs smwhalo ignoring any problems.
+        smwadmin -u --noask 
+            Updates the complete installation with no prompting.
+
+#
+# 4. Restore wiki from restore point
+# ===================================
+Whenever the Wiki Administration Tool performs one the following actions,
+it offers to create a "Wiki Restore Point":
+* Installing a package: smwadmin -i <package>
+* De-installing a package: smwadmin -d <package>
+* Updating a package: smwadmin -u <package>
+
+You may create a restore point and do an arbitrarily number of subsequent operations. You
+can create as many restore points as you want.
+
+You can create a restore point without changing the wiki by using this command:
+
+smwadmin -rcreate [name] 
+
+If name is missing a unique ID will be created. This can be useful if you want to 
+save your wiki periodically.
+
+Call "smwadmin -r [name]" to bring your Wiki back to a Wiki Restore Point. If name
+is missing, you will be prompted which should be restored.
+
+Simply said, the Wiki Administration Tool can undo your previous action and bring
+your Wiki back to previous state (including the data, articles and
+configuration).
+
+
+#
+# 5. Adding new repositories
+# ===========================
+        
+File for repository links:
+/deployment/config/repositories
+
+You may add new repositories here, the Ontoprise repo is already configured.
+
+Note: The former location of this file was in deployment/tools
+
+#
+# 6. Using Wiki Administration Tool with a Proxy
+# ===========================================
+
+Open <mediawiki-install-dir>/deployment/settings.php and set the proxy server address for
+'df_proxy'. For Example: 'df_proxy' => 'proxy.example.com:8080'
+
+#
+# 7. Wiki Administration Tool log
+# ================================
+The DF writes a log about the operations. It is stored in $HOME/$wikiname/df_log
+Both $HOME and $wikiname can be configured in <mediawiki-install-dir>/deployment/settings.php
+    
+The are usually two log files for each run of smwadmin. One for the installation process and
+one for the initialization process.
+
+#
+# 8. Importing ontologies
+# ========================
+First, take a look into tools/onto2mwxml/README.TXT and install onto2mwxml (requires TSC).
+
+Importing an ontology is as follows:
+
+    smwadmin -i <ontology file (full path)>
+
+#
+#9. Non public apps
+#===================
+Apps which are not published by the webservcer (TSC, SOLR,...) are handled separately.
+There is a file deployment/config/externalapps with the following format:
+
+<ID>=<path>
+
+Example:
+tsc=d:\tsc
+
+The file makes sure that the Wiki Administration Tool finds the applications. It is able 
+to find existing installations by itself but this works only for Windows if it is properly 
+registered in the Windows registry (which is the case when installed via Windows Installer). 
+Linux users should configure their applications if they were not installed via the Wiki 
+Administration Tool in the first place.
+
+#
+# Troubleshooting
+#
+
+Q: What means: "No HTTP impl. available on this system" ? 
+A: WAT needs the socket function of PHP or the 'curl' module loaded to access files via HTTP.
+   The socket functions are part of the standard PHP release but some webhosters deactivate them.
+   If they are missing, WAT can use 'curl' instead. If this is also missing, WAT won't work. Sorry.
+   
+   Uncomment one of the following in settings.php:
+   
+   //'df_http_impl' => 'HttpDownloadCurlImpl',
+   //'df_http_impl' => 'HttpDownloadSocketImpl',
+   
+Q: Does my PHP installation have all requirements installed?
+A: Please run checkPHP.php on the command line or go to Special:CheckInstallation.   

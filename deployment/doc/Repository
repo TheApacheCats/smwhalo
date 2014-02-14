@@ -1,0 +1,132 @@
+* 
+* Repository
+*
+* @author: Kai Kühn / ontoprise / 2010
+*
+
+#
+# 1. Repository architecture.
+#
+
+The deploy framework repository is a HTTP accessible endpoint of the following structure:
+
+    (1) A respository.xml file
+    (2) A extensions directory containing a subdirectory for every deployable entity 
+        The directory is named with the ID of the extension. The directory contains all available
+        deploy descriptors named after the following schema: deploy-<ver>.xml where <ver> is a 
+        3-digit version number. It also contains a file deploy.xml pointing to the latest deploy
+        descriptor, ie. the one with the highest version number.
+        
+ example:
+
+    - repository.xml
+    - extensions 
+     | 
+     |-smwhalo
+       |
+       |- deploy-130.xml
+       |- deploy-140.xml
+       |- deploy.xml
+     |-smw
+     |-haloacl
+     
+     
+
+The repository may use HTTP Basic Authentication for access restriction.
+
+Repository.xml format:
+
+    <root>
+        <extensions>
+            <extension id="extension>
+                <version ver="130" patchlevel="3" url="http://..."/>
+                <version ver="140" patchlevel="2" url="http://..."/>
+            </extension>
+        </extensions>
+    <root>    
+    
+Each extension has its own <extension> node. For each version there is one version node below containg the 
+version number and the patchlevel. The url attribute specifies where the bundle can be downloaded. Any 
+HTTP location is possible.
+
+Version numbers are always 3-digit numbers, patchlevels is an integer number >= 0. A missing patchlevel
+attribute is interpreted as 0.
+
+
+#
+# 2. Repository setup 
+#
+
+(a) create repository the included extensions
+
+    Before you make a new repository, you should setup a new branch and do an inital checkout. The change into
+    
+        $project-dir/deployment/tools/maintenance
+    
+    Make sure you have superuser access.
+        
+    Run the script: 
+    
+        php createRepository.php -o <repository location> -r <release num> --latest
+        
+    It creates the file <repository location>/repository.xml. If you create the repository from head,
+    replace the option -r <release num> by --head. The <release num> is a 3-digit number, like 151.
+        
+    If option '--latest' is given it creates a link to the latest version in each subdirectory. This is mandatory
+    for the latest version of an extension.
+    
+    Your repository is now accessible (if the repository dir is accessible by HTTP of course).
+
+(b) create an arbitrary repository
+
+    To create an empty repository where bundles can be added, enter:
+    
+     php createRepository.php -o <repository location> --head --empty
+
+#
+# 3. Add a bundle to a repository
+#
+
+The tool for adding a bundle to a repository is called 'addBundle2Repository'. It expects an already existing
+repository.
+
+    Usage:
+    
+        php addBundle2Repository.php -o <repository location> -b <bundle or bundle dir> --url=<repository url>
+        
+    The -b parameter can point to a single bundle or to a directory of bundles.
+    
+    There are 2 options:
+        --contains <string> : Considers only bundle files with the string contained.
+        --mediawiki: Adds the current Mediawiki version to the repository.     
+
+#
+# 4. Build automatically during build
+#
+
+You should create the repository during each build to reflect all changes in the deploy descriptors.
+Use this snippet. Just replace the <release num> by, for example, 151 for version 1.5.1
+
+#!/bin/sh -x
+
+#Write deploy descriptors
+cd $WORKSPACE/SMWHaloTrunk/deployment/tools/maintenance
+
+#Create new repository
+php createRepository.php -o /home/hudson/nightly_repository --head --latest
+
+#Add content bundles
+php addBundle2Repository.php -r /home/hudson/nightly_repository -b /home/hudson/dumps/wiki/contentwiki --url http://dailywikibuilds.ontoprise.com/nightly_repository --latest --mediawiki
+
+#Add Basic TSC
+php addBundle2Repository.php -r /home/hudson/nightly_repository -b /home/hudson/nightly_builds --url http://dailywikibuilds.ontoprise.com/nightly_repo
+
+#
+# 5. Rendering as HTML
+#
+
+The repository.xml file can be rendered to HTML using the following stylesheet shipped with DF:
+
+deployment/tools/maintenance/resources/repository.xsl
+
+Just copy the stylesheet in the repository's root folder.

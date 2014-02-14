@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<deploydescriptor>
+	<global>
+		<id>applicationprogramming</id>
+		<title>Application Programming</title>
+		<version>1.7.0</version>
+		<vendor>ontoprise GmbH</vendor>
+		<maintainer>ontoprise GmbH</maintainer>
+        <license>GPL-v2, MIT, Public Domain</license>
+		<instdir>extensions/ApplicationProgramming</instdir>
+		<description>
+			Provides utility functionality for wikitext-programming.
+		</description>
+		<helpurl>http://www.smwplus.com/index.php/Help:Application_Programming_Extension</helpurl>
+		<dependencies>
+            <dependency from="1.15.1">mw</dependency>
+        </dependencies>
+	</global>
+	
+	<codefiles>
+		<file loc="deploy.xml" />
+		<!-- TODO: add others -->
+	</codefiles>
+
+	<wikidumps>
+		<!-- empty -->
+	</wikidumps>
+
+	<resources>
+		<!-- empty -->
+	</resources>
+
+	<configs>
+	    <successor ext="smw"/>
+		<new>
+			<require name="pf"
+				file="extensions/ApplicationProgramming/ParserFunctions/ParserFunctions.php" />
+			<require name="urlarg"
+				file="extensions/ApplicationProgramming/URLArguments/URLArguments.php" />
+			<require name="variables"
+				file="extensions/ApplicationProgramming/Variables/Variables.php" />
+			<require name="preloadtext"
+				file="extensions/ApplicationProgramming/PreloadText/PreloadText.php" />
+			<variable name="wgPFEnableStringFunctions">
+				<boolean name="wgPFEnableStringFunctions"
+					description="wgPFEnableStringFunctions">
+					true
+				</boolean>
+			</variable>
+		</new>
+	</configs>
+</deploydescriptor>

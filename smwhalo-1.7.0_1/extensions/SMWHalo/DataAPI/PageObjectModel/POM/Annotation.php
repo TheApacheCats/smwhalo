@@ -1,0 +1,356 @@
+<?php
+/*
+ * Copyright (C) Vulcan Inc.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program.If not, see <http://www.gnu.org/licenses/>.
+ *
+ */
+
+
+/**
+ * @file
+ * @ingroup DAPOM
+ *
+ * @author Dian
+ */
+
+/**
+ * The abstract class representing an annotation.
+ *
+ */
+abstract class POMAnnotation extends POMElement {
+
+	/**
+	 * The name of the annotation.
+	 *
+	 * @var string
+	 */
+	public $name = '';
+
+	/**
+	 * The value of the annotation.
+	 *
+	 * @var string
+	 */
+	public $value = '';
+
+	/**
+	 * The representation of the value, i.e. the string after the '|'.
+	 *
+	 * @var string
+	 */
+	public $representation = '';
+
+}
+
+class POMLink extends POMAnnotation {
+	public function POMLink($text) {
+		$this->value = $this->parseValue($text);
+		$this->representation = '';
+
+		$this->children = null; // forcefully ignore children
+		$this->id = "link".POMElement::$elementCounter;
+		POMElement::$elementCounter++;
+	}
+
+	/**
+	 * Copies the current attribute values into a string representing a category annotation.
+	 *
+	 * @return string The markup for the category.
+	 */
+	public function toString(){
+		$__stringValue = '';
+		$__stringValue = '[['.$this->value.']]';
+
+		return $__stringValue;
+	}
+
+	/**
+	 * Get the value of the category.
+	 *
+	 * @return string The value of the category.
+	 */
+	public function getValue(){
+		return $this->value;
+	}
+
+	/**
+	 * Set the value of the category.
+	 *
+	 * @param string $value The value.
+	 */
+	public function setValue($value){
+		$this->value = $value;
+	}
+
+	/**
+	 * Class constructor. Creates the annotation based on the given parameters.
+	 *
+	 * @param string $value The name of the category.
+	 * @return POMLink
+	 */
+	public static function createLink($value)
+	{
+		$__nodeText = '[['.$value.']]';
+		return new POMLink($__nodeText);
+	}
+
+	private function parseValue ($text){
+		if(strpos($text, '|')){
+			$__start = 2;
+			$__end = strpos($text, '|');
+			return trim(substr($text, $__start , $__end - $__start));
+		}else{
+			$__start = 2;
+			$__end = strpos($text, ']]');
+			return trim(substr($text, $__start , $__end - $__start));
+		}
+	}
+}
+
+/**
+ * The category class used.
+ *
+ */
+class POMCategory extends POMAnnotation {
+	/**
+	 * Class constructor. Parses all category attributes.
+	 *
+	 * @param string $text The original text.
+	 * @return POMAnnotation
+	 */
+	public function POMCategory($text)
+	{
+		//		$this->nodeText = $text;
+		global $wgLang;
+		$this->name = $wgLang->getNSText(NS_CATEGORY);
+		list($value, $searchKey) = $this->parseValue($text); 
+		$this->value = $value; 
+		$this->representation = $searchKey;
+
+		$this->children = null; // forcefully ignore children
+
+		$this->id = "category".POMElement::$elementCounter;
+		POMElement::$elementCounter++;
+	}
+
+	/**
+	 * Class constructor. Creates the annotation based on the given parameters.
+	 *
+	 * @param string $value The name of the category.
+	 * @return POMCategory
+	 */
+	public static function createCategory($value)
+	{
+		$__nodeText = '[['.'Category'.':'.$value.']]';
+		return new POMCategory($__nodeText);
+	}
+
+	private function parseValue ($text){
+		if(strpos($text, '|')){
+			$__startValue = strpos($text, ':')+1;
+			$__endValue = strpos($text, '|');
+			$__startSearchKey = strpos($text, '|') + 1;
+			$__endSearchKey = strpos($text, ']]');
+			return array(substr($text, $__startValue , $__endValue - $__startValue),
+				substr($text, $__startSearchKey , $__endSearchKey - $__startSearchKey));
+		}else{
+			$__start = strpos($text, ':')+1;
+			$__end = strpos($text, ']]');
+			return array(substr($text, $__start , $__end - $__start), '');
+		}
+	}
+
+	/**
+	 * Copies the current attribute values into a string representing a category annotation.
+	 *
+	 * @return string The markup for the category.
+	 */
+	public function toString(){
+		
+		$__stringValue = '[['.$this->name.':'.$this->value;
+		if(strlen($this->representation) > 0){
+			$__stringValue .= '|'.$this->representation;
+		}
+		$__stringValue .= ']]';
+
+		return $__stringValue;
+	}
+
+	/**
+	 * Get the value of the category.
+	 *
+	 * @return string The value of the category.
+	 */
+	public function getValue(){
+		return $this->value;
+	}
+
+	/**
+	 * Set the value of the category.
+	 *
+	 * @param string $value The value.
+	 */
+	public function setValue($value){
+		$this->value = $value;
+	}
+}
+
+/**
+ * The property class.<br/>
+ * PLEASE NOTE: n-ary properties are generally not supported since the value
+ * in a name::value pair is represented as a string and DOESN'T underly further processing, e.g.
+ * splitting by ';' or checking the property type on the property definition page.
+ *
+ */
+class POMProperty extends POMAnnotation {
+	/**
+	 * Class constructor. Parses all annotation attributes.
+	 *
+	 * @param string $text The original text.
+	 * @return POMAnnotation
+	 */
+	public function POMProperty($text)
+	{
+		//		$this->nodeText = $text;
+		$this->name = $this->parseName($text);
+		$this->value = $this->parseValue($text);
+		$this->representation = $this->parseRepresentation($text);
+
+		$this->children = null; // forcefully ignore children
+
+		$this->id = "property".POMElement::$elementCounter;
+		POMElement::$elementCounter++;
+	}
+
+	/**
+	 * Class constructor. Creates the annotation based on the given parameters.
+	 *
+	 * @param string $name
+	 * @param string $value
+	 * @param string $representation
+	 * @return POMProperty
+	 */
+	public static function createProperty($name, $value, $representation = NULL)
+	{
+		if($representation !== NULL){
+			$__nodeText = '[['.$name.'::'.$value.'|'.$representation.']]';
+		}else{
+			$__nodeText = '[['.$name.'::'.$value.']]';
+		}
+
+		return new POMProperty($__nodeText);
+	}
+
+	/**
+	 * Copies the current attribute values into a string representing a property annotation.
+	 *
+	 * @return string The markup for the property.
+	 */
+	public function toString()
+	{
+		$__stringValue = '';
+		if ( strcmp($this->representation, '') === 0){
+			$__stringValue = '[['.$this->name.'::'.$this->value.']]';
+		}else{
+			$__stringValue = '[['.$this->name.'::'.$this->value.'|'.$this->representation.']]';
+		}
+		return $__stringValue;
+	}
+
+	private function parseName ($text){
+		while(preg_match('/^\[\[/',$text) !== 0){
+			$__start = strpos($text, '[[')+2;
+			$text = substr($text, $__start);
+		}
+		return substr($text, 0, strpos($text, '::'));
+	}
+
+	private function parseValue ($text){
+		if(strpos($text, '|')){
+			$__start = strpos($text, '::')+2;
+			$__end = strpos($text, '|');
+			return substr($text, $__start , $__end - $__start);
+		}else{
+			$__start = strpos($text, '::')+2;
+			$__end = strpos($text, ']]');
+			return substr($text, $__start , $__end - $__start);
+		}
+	}
+
+	private function parseRepresentation ($text){
+		if(strpos($text, '|')){
+			$__start = strpos($text, '|')+1;
+			$__end = strpos($text, ']]');
+			return substr($text, $__start , $__end - $__start);
+		}else{
+			return $this->parseValue($text);
+		}
+	}
+
+	/**
+	 * Get the name of the property.
+	 *
+	 * @return string The name of the property.
+	 */
+	public function getName(){
+		return $this->name;
+	}
+
+	/**
+	 * Set the name of the property.
+	 *
+	 * @param string $name The name.
+	 */
+	public function setName($name){
+		$this->name = $name;
+	}
+
+	/**
+	 * Get the value of the property.
+	 *
+	 * @return string The value of the property.
+	 */
+	public function getValue(){
+		return $this->value;
+	}
+
+	/**
+	 * Set the value of the property.
+	 *
+	 * @param string $value The value.
+	 */
+	public function setValue($value){
+		$this->value = $value;
+	}
+
+	/**
+	 * Get the representation of the property.
+	 *
+	 * @return string The representation of the property.
+	 */
+	public function getRepresentation(){
+		return $this->representation;
+	}
+
+	/**
+	 * Set the representation of the property.
+	 *
+	 * @param string $representation The representation.
+	 */
+	public function setRepresentation($representation){
+		$this->representation = $representation;
+	}
+
+}

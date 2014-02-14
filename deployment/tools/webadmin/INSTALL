@@ -1,0 +1,130 @@
+==========================================
+ 1. Installation of the webadmin console
+==========================================
+
+(1) Make sure deployment/tools/webadmin is accessible via HTTP
+(2) Set the $scriptPath and $df_lang variable in deployment/settings.php to your wiki location
+    (same as $wgScriptPath and $wgLang in LocalSettings.php)
+(3) Change the wiki name in deployment/settings.php. Do not use spaces or 
+	special characters since it is used as a directoy name. Underscores are OK.
+(4) Configure a home directory in deployment/settings.php if $HOME or %HOME% is not defined
+	for the user which runs the webserver.
+(5) Allow the webserver to write in 
+
+        - deployment/tools/webadmin/sessiondata
+        - LocalSettings.php
+        - extensions folder (and all extensions contained)
+        - deployment/tools/webadmin
+        - deployment/config/repositories
+        - /usr/share/local/Ontoprise (optional, only required if you plan to install external apps like TSC)
+        
+    It is recommended to make the user which runs the webserver the owner of
+    these files and directories. It can be a different webserver than used for the wiki.    
+        
+(6) Allow the webserver/PHP to run external PHP processes (normally granted per default in PHP).
+(7) For wiki authentication make sure that the 'curl' PHP-extension is installed. 
+    Otherwise authentication by wiki is not possible and you have to configure a separate
+    user solely for DF-GUI. Take a look in deployment/settings.php for that:
+    
+	    public static $df_authorizeByWiki = false;
+		public static $df_webadmin_user = "root";
+		public static $df_webadmin_pass = "pass";
+	
+	In case of wiki authentication all Wiki sysops are allowed to use the DF-GUI.
+	
+(8) If you want to upload bundles you have to enable uploads in your webserver conf and in php.ini. 
+    You can configure the upload directory for DF-GUI in settings.php. Otherwise uploads 
+    are stored in $HOME/df_upload. If that does neither work, error is thrown. 
+    Note: The upload directory for DF-GUI is not the same as used for the webserver conf!
+(9) If you want to restore from a restore point the whole wiki directory
+    must be writable by the webserver. ( see (4) )  
+    Make also sure that the database credentials $wgDBadminuser and $wgDBadminpassword 
+    are both set in LocalSettings.php.
+
+You get a warning if something is missing when you first access the webadmin console.
+
+There is a settings file located at deployment/settings.php. Take a look in it,
+it is documented. It contains some configuration concerning the webadmin console.
+
+========================================================
+ 2. Server administration with Wiki Administration tool
+========================================================
+The wiki admin tool allows starting and stopping server processes (Server tab). If you are using the Windows installer,
+everything is pre-configured and should work out-of-the-box. If not, you have to do some manual work.
+
+Windows 7 (should also work on XP):
+
+    The commands which are executed can be freely chosen in the web interface. However, you should use the Feature 'Planned tasks' on Windows
+    to define tasks to run. The big advantage of this way is that it is possible to run such a task with admin priviledges
+    instead of the priviledges the apache server has. Then it is possible to start/stop Windows services for example.
+    
+    (1) Create a planned task. Don't specify an execution interval. Register it with admin priviledges (checkbox on first tab)
+        Run a script which does the job you want (for stopping memcache for example: net stop memcache). Then name the task, 
+        let's say 'stop_memcache'.
+        
+    (2) Add the command to run the task in the webinterface:
+    
+        schtasks /run /tn stop_memcache
+         
+    (3) Execute it.
+    
+    You can change the user which is used for executing this requests in settings.php (normally not necessary)
+    
+        public static $df_runas_user = "wikiadmin";
+        public static $df_runas_password = "geheim";
+        
+    Note:
+    
+    There is a maintenace script which create stubs for these tasks: 
+        
+        deployment/maintenace/installServerTasks.php
+    
+    In non-SMW+ environments, you need to adjust the stubs 
+    afterwards because the run commands only contain:
+    
+        "add your script here"
+    
+    
+        
+Linux:
+
+    (1) Change the user's sudo rights which runs the webserver. It must be able to 
+    	upgrade to root priviledges without a password.
+    
+    (2) Open the file /etc/sudoers via 
+    
+     		sudo visudo
+     		
+        and add this line to the end:
+        
+	     	www-data ALL=NOPASSWD: ALL
+	     
+    	(assuming that your webserver's user is "www-data")
+   
+	    It allows a user 'www-data' to run with sudo privileges and it requires no password when obtaining.
+	    
+	    BE CAREFUL: Don't changes anything else unless you know what you do. You can easily lock yourself out.
+    
+    (3) Change the task in the webinterface if necessary. Then execute the task via webinterface.
+    
+    	For example, if you use SOLR via a tomcat application server, you have to change the command for managing the server
+    	because per default it assumes that SOLR is used via a jetty webserver.  
+    
+    For more details, take a look here: 
+        http://www.linuxhomenetworking.com/wiki/index.php/Quick_HOWTO_:_Ch09_:_Linux_Users_and_Sudo#The_.2Fetc.2Fsudoers_File
+
+====================
+ 3. Troubleshooting
+====================
+
+If you followed the instructions and it still does not work, try to enable the 
+error reporting by uncommenting the following two lines at the beginning 
+of deployment/tools/webadmin/index.php:
+
+----
+error_reporting(E_ALL);
+ini_set('display_errors', "On");
+----
+
+Now you should get an error message which might help.
+

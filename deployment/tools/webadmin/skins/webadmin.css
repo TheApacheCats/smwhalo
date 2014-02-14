@@ -1,0 +1,262 @@
+@CHARSET "ISO-8859-1";
+
+#df_profiler_filtering {
+	margin-top: 2px;
+}
+
+#df_profiler_downloadlog {
+	margin-left: 5px;
+}
+
+#df_webadmin_profiler_selectlog {
+	width: 100%;
+}
+
+#df_profiler_requests_filtering_box {
+	margin-left: 5px;
+}
+
+#df_clearprofilinglog {
+	margin-left: 5px; 
+}
+	
+#df_webadmin_profilerlog {
+	font-size: 0.8em;
+	font-family: "Courier New", Courier, monospace;
+	width: 100%;
+	
+}
+
+#df_webadmin_profiler_filtering {
+	margin-top: 10px;
+}
+
+#df_webadmin_profilerlog_container {
+	height: 400px;
+	overflow: auto;
+	margin-top: 10px;
+}
+
+#df_webadmin_profiler_actions {
+	
+}
+	
+#df_webadmin_profiler_content {
+	margin-top: 20px;
+}
+
+.df_setting div {
+	display:none;
+}
+.df_setting:hover div {
+    display:block;
+}
+
+.df_settings_help {
+	background-color: #CCC;
+	border-radius: 4px 4px 4px 4px;
+	font-size: 0.8em;
+	margin: 5px;
+}
+
+.df_install_all {
+	margin-top: 15px;
+}
+
+#df_watsettings {
+	margin-top 10px;
+}
+
+#df_bundlelist_table {
+	margin-top: 20px;
+	width: 45%;
+}
+
+#df_contentbundle_error {
+	margin-top: 10px;
+	color: red;
+}
+
+.df_notice {
+	background-color: #D88;
+}
+
+#df_log_results_table {
+	width: 100%;
+	
+}
+
+#df_log_results_table_container {
+	height: 600px;
+	overflow: auto;
+	width: 100%;
+	margin-top: 20px;
+}
+
+.df_log_link {
+	text-align: center;
+}
+
+#df_header {
+    font-size: 2.5em;
+    font-family: "Arial";
+    margin-bottom: 20px;
+    color: #838383;    
+}
+
+#df_updateavailable {
+	margin-top: 20px;
+	border: 5px solid green;
+	text-align: center;
+	padding: 5px;
+}
+
+#df_non_finalized_extensions {
+    margin-top: 20px;
+    border: 5px solid orange;
+    text-align: center;
+    padding: 5px;
+}
+
+#df_statustable {
+	margin-top: 20px;
+}
+
+#df_search_results_header {
+	margin-top: 10px;
+}
+
+#df_webadmin_aboutlink {
+    cursor: pointer;	
+}
+
+.df_row_0 {
+	background-color: #AAA;
+}
+
+.df_row_1 {
+	background-color: #CCC;
+}
+
+
+#df_bundlefilelist {
+	margin-top: 20px;
+}
+
+#df_bundlefilelist_table td {
+	 width: 200px;
+	 padding: 5px;
+}
+
+#df_bundlefilelist_table th {
+     border-bottom: 2px solid;
+}
+
+
+
+.df_extension_id {
+	width: 15%;
+}
+
+.df_extension_version {
+	width: 15%;
+	text-align: center;
+}
+
+.df_description {
+	width: 50%;
+}
+
+.df_actions {
+	width: 20%;
+	text-align: center;
+}
+
+.df_enumeration {
+	margin-left: -20px;
+}
+
+#df_install_all {
+	margin-left: 20px;
+}
+
+.df_extension_id:hover {
+	background-color: yellow;
+	cursor: pointer;
+}
+
+.df_version:hover {
+    background-color: yellow;
+    cursor: pointer;
+}
+
+.df_bundlefilelist td {
+	width: 30%;
+	text-align: center;
+}
+
+#df_restorepoint_table {
+	margin-top: 20px;
+}
+
+#df_restorepoint_table th {
+	border-bottom: 2px solid;
+	width: 200px;
+}
+
+#df_restorepoint_table td {
+	width: 200px;
+	text-align: center;
+	padding: 5px;
+}
+
+.df_extension_details td[description] {
+	width: 150px;
+	padding-top: 10px;
+}
+
+.df_extension_details td[value] {
+	color: blue;
+	padding-top: 10px;
+}
+
+#df_existingrepository_section {
+	margin-top: 20px;
+}
+
+.onto2mwxml_error {
+	color: red;
+}
+
+.df_process_unknown {
+    background: grey;
+    color: white;
+    width: 150px;
+    text-align: center;
+}
+
+.df_running_process {
+	background: green;
+    color: white;
+    width: 150px;
+    text-align: center;
+}
+
+.df_not_running_process {
+	background: red;
+    color: white;
+    width: 150px;
+    text-align: center;
+}
+
+#df_server_state_table td {
+    height: 40px;
+}
+
+#df_console_log_link {
+    color: grey; 
+}
+
+#df_finalization_console_log_link {
+    color: grey; 
+}

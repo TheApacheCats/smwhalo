@@ -1,0 +1,207 @@
+* 
+* Documentation for content bundles 
+*
+* This text file describes what a content bundle is and how it can be created.
+* 
+* @author: Kai K�hn / ontoprise / 2011
+*
+
+Contents:
+    
+    0. General information about content bundles
+    1. Prerequisites
+    2. Creating a content bundle
+    3. Importing a bundle from a file
+    4. Importing an ontology from a file
+    5. XML dump
+
+################################################
+# 0. General information about content bundles
+################################################
+
+Content bundles are deployable entities which contain only wiki pages or ontologies. Every page which is contained in a bundle is linked to its bundle page, 
+which keeps meta information about this bundle. The bundle page name MUST be equal to the bundle ID (except for the starting uppercase letter of the page).
+    
+   A content bundle consists of a set of wiki pages. These pages have to fullfil the following requirements (note: this holds for a wiki using english as content language):
+   
+       * There is a page named after the bundle's ID. (can start with an uppercase letter)
+            
+       * Content Bundle pages contains a special annotation that marks it as part of the bundle .
+             
+           - Part of bundle (binary relation property)
+        
+        These two conventions should be considered:
+        
+           - Use this annotation in each page, the best approach is to embed this annotation in a template which each page is using. 
+             The target is the bundle's description page (see below). This approach is not required, but this makes it easier to 
+             change the name of the bundle later at some point.
+                
+           - Instances of categories belonging to the bundle are automatically included. That means they may not (and should not) 
+             have annotations of 'Part of bundle'. The same holds for templates belongig to the bundle. Those pages will be exported 
+             and saved in the dump. 
+         
+    The wiki pages can come from wiki dumps or from ontologies. They are registered the same way in the deploy descriptor.
+    Note: Wiki dumps of the DF use a slightly extended XML format than MediaWiki does. It can be created using the exportBundle tool (see section 2)
+    
+    <wikidumps>
+        <file loc="path relative to bundle"/>
+        ...
+    </wikidumps> 
+    
+     <ontologies>
+        <file loc="path relative to bundle"/>
+        ...
+    </ontologies> 
+         
+###############################################           
+# 1. Prerequisites
+###############################################
+    
+    You need the following entities to create a bundle:
+    
+    (1) 'Property:Part of bundle'
+         A binary annotation of Type:Page
+            
+    (2) Bundle description page
+            There is one special page describing the bundle itself. It has the name of the bundle, i.e. it is the target 
+            of the 'Part of bundle' annotations.
+            
+            Include the following annotations into the Bundle description page:
+            
+            * Ontology version (1..1), integer number, e.g. 120
+            * Dependency (1..n), n-ary annotation (package-id, minVesion, maxVersion)
+            * Installation dir (1..1) string
+            * Vendor (1..1) string
+            * Rationale (1..1) string
+            * License (1..1) Page
+            * Maintainer (1..1) string
+            * HelpUrl (1..1) string
+                
+            Note: Package-id is the name of the package, e.g. smwhalo or semanticforms.
+                
+            Example of a Bundle description page:
+                
+              [[Ontology version::120]]
+              [[Dependency::smw;120;140]]
+              [[Installation dir::extensions/MyExtension]]
+              [[Vendor::Ontoprise]]
+              [[Description::Some text]]
+                
+     (3) Others  
+               
+            Add every namespace whose instances are to be exported to the global 
+			array $smwgNamespacesWithSemanticLinks e.g.
+            
+            $smwgNamespacesWithSemanticLinks[<id of namespace>] = true;
+          
+            Define all properties that are used for the export e.g. "Part of bundle" etc. 
+			in the wiki with their appropriate types:
+            
+            * Property:Dependency:
+              [[has type::Type:Record]]
+              [[has fields::Type:String;Type:Number;Type:Number| ]]
+            
+            * Property:Rationale:
+              [[has type::Type:String| ]]
+             
+            * Property:License:
+              [[has type::Type:Page| ]]
+              
+            * Property:HelpUrl:
+              [[has type::Type:String| ]]
+              
+            * Property:Maintainer:
+              [[has type::Type:String| ]]
+            
+            * Property:Installation dir:
+              [[has type::Type:String| ]]
+            
+            * Property:Ontology version:
+              [[has type::Type:Number| ]]
+            
+            * Property:Vendor:
+              [[has type::Type:String| ]]
+            
+            * Property:Part of bundle
+              [[has type::Type:Page| ]]
+
+######################################
+# 2. Creating a content bundle    
+######################################
+    
+    The PHP script export.php in tools/maintenance is a extended version of the default MediaWiki exporter and does the exporting.
+    The script export.php supports the same options as the default MW export script does and these two:
+        
+        -b <bundlename> (bundlename always lowercase!)
+        
+        --includeInstances=true|false : (default is false)
+            Export instances of categories belonging to the bundle, or export only _explicitly_ annotated pages.
+            
+        --includeImages=true|false : (default is false)
+            Export images belonging to the bundle, or export only _explicitly_ annotated pages.
+            
+        --includeTemplates=true|false : (default is false)
+            Export used templates belonging to the bundle or export only _explicitly_ annotated pages.
+        
+    For convenience the shell script (deployment/tools/maintenance/exportBundle.bat/sh) is recommended. Use it like follows:    
+    
+      exportBundle <bundlename> 
+      
+      The output directory gets created automatically and it is shown at the end. (usually /tmp/bundlename)
+      
+    Example:
+    
+      exportBunde mybundle 
+      
+      This exports all pages belonging to the bundle 'mybundle' (including instances of categories of the bundle and templates it uses) and
+      returns a deployable bundle named mybundle.zip.
+      
+      Note: 
+        (1) Linux requires the default GNU zip tool. Please install it before.
+    
+        (2) Content bundles contain an automatically generated notice to tell the user to refresh 
+            the semantic content. This notice is shown at the end of the installation procedure. 
+      
+      
+########################################  
+# 3. Importing a bundle from a file
+########################################
+
+    Bundles can be imported from a file by using the following command:
+    
+        smwadmin -i <bundle zip file>
+        
+    Make sure the file has the usual ending for zip files, namely 'zip'.
+
+    When a dump is imported, the hash value is read and added as annotation to the page. By default the annotation
+    is not visible in the rendered text, but you can see it in the factbox.
+
+########################################
+# 4. Importing an ontology from a file
+########################################
+
+    Ontologies can be imported from a file by using the following command:
+        
+        smwadmin -i <ontology file>
+    
+    The ontology is converted into a XML dump and imported into the wiki. You might enter a prefix to distinguish ontologies in case of conflicts. 
+    You can skip the conflict test by using the -f (force) switch.
+     
+    The imported ontology is represented as a content bundle after import. That means a bundle page is created automatically. There is also a new directory 
+    under extensions/ which contain the ontology and a deploy descriptor.
+    The bundle can be shown as installed using smwadmin -l.
+    
+    Note: The DF can read ontologies files in any representation the Jena framework supports.
+          There is an extended version which can also read ObjectLogic. Contact Ontoprise for that.
+
+######################################### 
+# 5. XML dump
+#########################################
+ 
+   The wikipage dumps use basically the same XML format than MediaWiki does. But it was extended slightly:
+   
+     A hash attribute for each page indicates that it has changed or not. The hash is included as 
+     annotation during the import process. The revision node contains an additional node called <hash>
+     which contains a MD5 hash of the text content.    
+	 
+    

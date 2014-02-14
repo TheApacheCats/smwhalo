@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<deploydescriptor>
+	<global>
+		<id>arclibrary</id>
+		<title>ARC2 library</title>
+		<version>1.7.0</version>
+		<patchlevel>0</patchlevel>
+		<vendor>ontoprise GmbH</vendor>
+		<maintainer>ontoprise GmbH</maintainer>
+		<instdir>extensions/ARCLibrary</instdir>
+		<description>
+			Provides RDF support via the ARC2 library to other MW extensions.
+		</description>
+		<helpurl>http://www.smwplus.com/index.php/Help:ARCLibrary_extension</helpurl>
+		<dependencies>
+			<dependency from="1.17.0" to="1.17.9">mw</dependency>
+		</dependencies>
+		<license>GPL v2</license>
+	</global>
+	
+	<codefiles>
+		<file loc="deploy.xml" />
+	</codefiles>
+	
+	<wikidumps>
+		<!-- empty -->
+	</wikidumps>
+	
+	<resources>
+		<!-- empty -->
+	</resources>
+
+	<configs>
+        <successor ext="smw"/>
+		<new>
+			<require name="arclib_init"
+				file="extensions/ARCLibrary/ARCLibrary.php" />
+			
+		</new>
+		<update from="156" removeAll="true">
+            <require name="arclib_init"
+                file="extensions/ARCLibrary/ARCLibrary.php" />
+        </update>
+		<uninstall>
+			<!-- empty -->
+		</uninstall>
+	</configs>
+</deploydescriptor>
+
